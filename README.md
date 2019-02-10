@@ -12,7 +12,7 @@ Most of the information is obtained directly from Hyper-V Server performance cou
 
 ## How to install
 
-No servidor execute os comandos:
+On the server run the following commands:
 
 ```cmd
 git clone https://github.com/lpsouza/hyperv_exporter.git
