@@ -1,5 +1,5 @@
 # hyperv_exporter
-Exporter for Prometheus developed in C # (.NET Core) for information on Hyper-V servers like:
+Exporter for Prometheus developed in C# (.NET Core) for information on Hyper-V servers like:
 
 - CPU usage
 - Total and available memory
