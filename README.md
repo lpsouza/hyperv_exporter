@@ -1,4 +1,5 @@
 # hyperv_exporter
+
 Exporter for Prometheus developed in C# (.NET Core) for information on Hyper-V servers like:
 
 - CPU usage
@@ -12,12 +13,11 @@ Most of the information is obtained directly from Hyper-V Server performance cou
 
 ## How to install
 
-On the server run the following commands:
+At .NET core 2.1 developer workstation:
 
-```cmd
-git clone https://github.com/lpsouza/hyperv_exporter.git
-cd hyperv_exporter
-install_service.cmd
-```
-
-Note: You must have installed the GIT application on the server.
+1. Clone this repository;
+2. Inside the project folder run: `publish.cmd`;
+   - If you need publish to 2012 R2 version, edit publish.cmd file and make the adjust.
+3. Get all release files and send to Hyper-V Server;
+4. On Hyper-V Server, in the release folder, run: `install_service.cmd`
+5. Visit on the browser: [http://hyper-v-ip:9182/](http://hyper-v-ip:9182/)
