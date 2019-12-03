@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -121,14 +121,14 @@ namespace hyperv_exporter
                     if (d.IsReady == true)
                     {
                         string instanceName = instanceLogicalDiskFreeMegabytesNames.Where(a => GenerateSlug(a) == GenerateSlug(d.Name)).FirstOrDefault();
-                    PerformanceCounter counterLogicalDiskFreeMegabytes = new PerformanceCounter("LogicalDisk", "Free Megabytes", instanceName);
-                    if (counterLogicalDiskFreeMegabytes.RawValue > 0)
-                    {
-                        counterLogicalDiskFreeMegabytes.NextValue();
-                        System.Threading.Thread.Sleep(1000);
-                        result += string.Format("{0}{2} {1}\n", counterLogicalDiskFreeMegabytesName, counterLogicalDiskFreeMegabytes.NextValue(), "{disk=\"" + GenerateSlug(instanceName) + "\"}");
+                        PerformanceCounter counterLogicalDiskFreeMegabytes = new PerformanceCounter("LogicalDisk", "Free Megabytes", instanceName);
+                        if (counterLogicalDiskFreeMegabytes.RawValue > 0)
+                        {
+                            counterLogicalDiskFreeMegabytes.NextValue();
+                            System.Threading.Thread.Sleep(1000);
+                            result += string.Format("{0}{2} {1}\n", counterLogicalDiskFreeMegabytesName, counterLogicalDiskFreeMegabytes.NextValue(), "{disk=\"" + GenerateSlug(instanceName) + "\"}");
+                        }
                     }
-                }
                 }
                 #endregion
 
@@ -140,16 +140,6 @@ namespace hyperv_exporter
                 result += string.Format("# HELP {0} Count of virtual machines with OK status health\n", counterHypervHealthOkName);
                 result += string.Format("# TYPE {0} gauge\n", counterHypervHealthOkName);
                 result += string.Format("{0} {1}\n", counterHypervHealthOkName, counterHypervHealthOk.NextValue());
-                #endregion
-
-                #region hyperv_vms_critical
-                string counterHypervHealthCriticalName = "hyperv_vms_critical";
-                PerformanceCounter counterHypervHealthCritical = new PerformanceCounter("Hyper-V Virtual Machine Health Summary", "Health Critical");
-                counterHypervHealthCritical.NextValue();
-                System.Threading.Thread.Sleep(1000);
-                result += string.Format("# HELP {0} Count of virtual machines with CRITICAL status health\n", counterHypervHealthCriticalName);
-                result += string.Format("# TYPE {0} gauge\n", counterHypervHealthCriticalName);
-                result += string.Format("{0} {1}\n", counterHypervHealthCriticalName, counterHypervHealthCritical.NextValue());
                 #endregion
 
                 #region hyperv_vms_running
