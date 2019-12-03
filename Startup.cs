@@ -116,8 +116,11 @@ namespace hyperv_exporter
                 string[] instanceLogicalDiskFreeMegabytesNames = categoryLogicalDiskFreeMegabytes.GetInstanceNames();
                 result += string.Format("# HELP {0} Logical disk free space (in MB)\n", counterLogicalDiskFreeMegabytesName);
                 result += string.Format("# TYPE {0} gauge\n", counterLogicalDiskFreeMegabytesName);
-                foreach (string instanceName in instanceLogicalDiskFreeMegabytesNames)
+                foreach (DriveInfo d in allDrives)
                 {
+                    if (d.IsReady == true)
+                    {
+                        string instanceName = instanceLogicalDiskFreeMegabytesNames.Where(a => GenerateSlug(a) == GenerateSlug(d.Name)).FirstOrDefault();
                     PerformanceCounter counterLogicalDiskFreeMegabytes = new PerformanceCounter("LogicalDisk", "Free Megabytes", instanceName);
                     if (counterLogicalDiskFreeMegabytes.RawValue > 0)
                     {
@@ -125,6 +128,7 @@ namespace hyperv_exporter
                         System.Threading.Thread.Sleep(1000);
                         result += string.Format("{0}{2} {1}\n", counterLogicalDiskFreeMegabytesName, counterLogicalDiskFreeMegabytes.NextValue(), "{disk=\"" + GenerateSlug(instanceName) + "\"}");
                     }
+                }
                 }
                 #endregion
 
