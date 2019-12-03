@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace hyperv_exporter
                 string counterNetworkAdapterBytesTotalSecName = "hyperv_network_adapter_bytes_total_sec";
                 PerformanceCounterCategory categoryNetworkAdapterBytesTotalSec = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "Network Adapter");
                 string[] instanceNetworkAdapterBytesTotalSecNames = categoryNetworkAdapterBytesTotalSec.GetInstanceNames();
+                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
                 result += string.Format("# HELP {0} Network adapter traffic (bytes total/sec)\n", counterNetworkAdapterBytesTotalSecName);
                 result += string.Format("# TYPE {0} gauge\n", counterNetworkAdapterBytesTotalSecName);
                 foreach (string instanceName in instanceNetworkAdapterBytesTotalSecNames)
@@ -86,9 +88,10 @@ namespace hyperv_exporter
                     PerformanceCounter counterNetworkAdapterBytesTotalSec = new PerformanceCounter("Network Adapter", "Bytes Total/sec", instanceName);
                     if (counterNetworkAdapterBytesTotalSec.RawValue > 0)
                     {
+                        string name = networkInterfaces.AsEnumerable().Where(a => GenerateSlug(a.Description) == GenerateSlug(instanceName)).FirstOrDefault().Name;
                         counterNetworkAdapterBytesTotalSec.NextValue();
                         System.Threading.Thread.Sleep(1000);
-                        result += string.Format("{0}{2} {1}\n", counterNetworkAdapterBytesTotalSecName, counterNetworkAdapterBytesTotalSec.NextValue(), "{adapter=\"" + GenerateSlug(instanceName) + "\"}");
+                        result += string.Format("{0}{2} {1}\n", counterNetworkAdapterBytesTotalSecName, counterNetworkAdapterBytesTotalSec.NextValue(), "{adapter=\"" + GenerateSlug(name) + "\"}");
                     }
                 }
                 #endregion
