@@ -6,14 +6,13 @@ Exporter for Prometheus developed in C# (.NET Core) for information on Hyper-V s
 - Total and available memory
 - Total and available disk
 - Total traffic for each network interface
-- Count of all VMs with integrity OK and Critical
-- Count of all VMs that are running
+- Count of total VMs
 
 Most of the information is obtained directly from Hyper-V Server performance counters.
 
 ## How to install
 
-At .NET core 2.1 developer workstation:
+At .NET core 3.0 developer workstation:
 
 1. Clone this repository;
 2. Inside the project folder run: `publish.cmd`;
