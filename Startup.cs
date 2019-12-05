@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -133,22 +133,12 @@ namespace hyperv_exporter
                 }
                 #endregion
 
-                #region hyperv_vms_ok
-                string counterHypervHealthOkName = "hyperv_vms_ok";
-                PerformanceCounter counterHypervHealthOk = new PerformanceCounter("Hyper-V Virtual Machine Health Summary", "Health Ok");
-                counterHypervHealthOk.NextValue();
-                System.Threading.Thread.Sleep(1000);
-                result += string.Format("# HELP {0} Count of virtual machines with OK status health\n", counterHypervHealthOkName);
-                result += string.Format("# TYPE {0} gauge\n", counterHypervHealthOkName);
-                result += string.Format("{0} {1}\n", counterHypervHealthOkName, counterHypervHealthOk.NextValue());
-                #endregion
-
-                #region hyperv_vms_running
-                string counterHypervCountRunningVmsName = "hyperv_vms_running";
-                PerformanceCounterCategory categoryHypervCountRunningVms = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "Hyper-V Dynamic Memory VM");
-                result += string.Format("# HELP {0} Count total VMs in Hyper-V\n", counterHypervCountRunningVmsName);
-                result += string.Format("# TYPE {0} gauge\n", counterHypervCountRunningVmsName);
-                result += string.Format("{0} {1}\n", counterHypervCountRunningVmsName, categoryHypervCountRunningVms.GetInstanceNames().Count());
+                #region hyperv_vms_total
+                string counterHypervCountTotalVmsName = "hyperv_vms_total";
+                PerformanceCounterCategory categoryHypervCountTotalVms = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "Hyper-V Dynamic Memory VM");
+                result += string.Format("# HELP {0} Count total VMs in Hyper-V\n", counterHypervCountTotalVmsName);
+                result += string.Format("# TYPE {0} gauge\n", counterHypervCountTotalVmsName);
+                result += string.Format("{0} {1}\n", counterHypervCountTotalVmsName, categoryHypervCountTotalVms.GetInstanceNames().Count());
                 #endregion
 
                 await context.Response.WriteAsync(result);
