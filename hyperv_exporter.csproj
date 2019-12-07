@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
-    <Copy SourceFiles="install_service.cmd" DestinationFolder="$(PublishDir)" />
-    <Copy SourceFiles="remove_service.cmd" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="install_service.ps1" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="remove_service.ps1" DestinationFolder="$(PublishDir)" />
   </Target>
 
 </Project>
