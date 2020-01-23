@@ -1,0 +1,3 @@
+[submodule "libs/prometheus"]
+	path = libs/prometheus
+	url = https://github.com/lpsouza/dotnet_lib_prometheus
