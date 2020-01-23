@@ -8,6 +8,7 @@ using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using dotnet_lib_prometheus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -54,17 +55,31 @@ namespace hyperv_exporter
                 PerformanceCounter counterHypervCpuTotalRunTime = new PerformanceCounter("Hyper-V Hypervisor Logical Processor", "% Total Run Time", "_Total");
                 counterHypervCpuTotalRunTime.NextValue();
                 System.Threading.Thread.Sleep(1000);
-                result += string.Format("# HELP {0} Virtual processor usage percentage in guest and hypervisor code\n", counterHypervCpuTotalRunTimeName);
-                result += string.Format("# TYPE {0} gauge\n", counterHypervCpuTotalRunTimeName);
-                result += string.Format("{0} {1}\n", counterHypervCpuTotalRunTimeName, counterHypervCpuTotalRunTime.NextValue());
+                result += Prometheus.CreateMetricDescription(
+                    counterHypervCpuTotalRunTimeName,
+                    "gauge",
+                    "Virtual processor usage percentage in guest and hypervisor code."
+                );
+                result += Prometheus.CreateMetric(
+                    counterHypervCpuTotalRunTimeName,
+                    counterHypervCpuTotalRunTime.NextValue().ToString(),
+                    string.Empty
+                );
                 #endregion
 
                 #region hyperv_memory_total_bytes
                 string counterComputerInfoTotalPhysicalMemoryName = "hyperv_memory_total_bytes";
                 ComputerInfo computerInfo = new ComputerInfo();
-                result += string.Format("# HELP {0} Total physical memory\n", counterComputerInfoTotalPhysicalMemoryName);
-                result += string.Format("# TYPE {0} gauge\n", counterComputerInfoTotalPhysicalMemoryName);
-                result += string.Format("{0} {1}\n", counterComputerInfoTotalPhysicalMemoryName, computerInfo.TotalPhysicalMemory);
+                result += Prometheus.CreateMetricDescription(
+                    counterComputerInfoTotalPhysicalMemoryName,
+                    "gauge",
+                    "Total physical memory."
+                );
+                result += Prometheus.CreateMetric(
+                    counterComputerInfoTotalPhysicalMemoryName,
+                    computerInfo.TotalPhysicalMemory.ToString(),
+                    string.Empty
+                );
                 #endregion
 
                 #region hyperv_memory_avaliable_bytes
@@ -72,9 +87,16 @@ namespace hyperv_exporter
                 PerformanceCounter counterMemoryAvaliableBytes = new PerformanceCounter("Memory", "Available Bytes");
                 counterMemoryAvaliableBytes.NextValue();
                 System.Threading.Thread.Sleep(1000);
-                result += string.Format("# HELP {0} Total memory avaliable in bytes\n", counterMemoryAvaliableBytesName);
-                result += string.Format("# TYPE {0} gauge\n", counterMemoryAvaliableBytesName);
-                result += string.Format("{0} {1}\n", counterMemoryAvaliableBytesName, counterMemoryAvaliableBytes.NextValue());
+                result += Prometheus.CreateMetricDescription(
+                    counterMemoryAvaliableBytesName,
+                    "gauge",
+                    "Total memory avaliable in bytes."
+                );
+                result += Prometheus.CreateMetric(
+                    counterMemoryAvaliableBytesName,
+                    counterMemoryAvaliableBytes.NextValue().ToString(),
+                    string.Empty
+                );
                 #endregion
 
                 #region hyperv_network_adapter_bytes_total_sec
@@ -82,8 +104,11 @@ namespace hyperv_exporter
                 PerformanceCounterCategory categoryNetworkAdapterBytesTotalSec = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "Network Adapter");
                 string[] instanceNetworkAdapterBytesTotalSecNames = categoryNetworkAdapterBytesTotalSec.GetInstanceNames();
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-                result += string.Format("# HELP {0} Network adapter traffic (bytes total/sec)\n", counterNetworkAdapterBytesTotalSecName);
-                result += string.Format("# TYPE {0} gauge\n", counterNetworkAdapterBytesTotalSecName);
+                result += Prometheus.CreateMetricDescription(
+                    counterNetworkAdapterBytesTotalSecName,
+                    "gauge",
+                    "Network adapter traffic (bytes total/sec)."
+                );
                 foreach (string instanceName in instanceNetworkAdapterBytesTotalSecNames)
                 {
                     PerformanceCounter counterNetworkAdapterBytesTotalSec = new PerformanceCounter("Network Adapter", "Bytes Total/sec", instanceName);
@@ -92,7 +117,11 @@ namespace hyperv_exporter
                         string name = networkInterfaces.AsEnumerable().Where(a => GenerateSlug(a.Description) == GenerateSlug(instanceName)).FirstOrDefault().Name;
                         counterNetworkAdapterBytesTotalSec.NextValue();
                         System.Threading.Thread.Sleep(1000);
-                        result += string.Format("{0}{2} {1}\n", counterNetworkAdapterBytesTotalSecName, counterNetworkAdapterBytesTotalSec.NextValue(), "{adapter=\"" + GenerateSlug(name) + "\"}");
+                        result += Prometheus.CreateMetric(
+                            counterNetworkAdapterBytesTotalSecName,
+                            counterNetworkAdapterBytesTotalSec.NextValue().ToString(),
+                            "{adapter=\"" + GenerateSlug(name) + "\"}"
+                        );
                     }
                 }
                 #endregion
@@ -100,13 +129,20 @@ namespace hyperv_exporter
                 #region hyperv_logical_disk_total_megabytes
                 string counterDriveInfoTotalSizeName = "hyperv_logical_disk_total_megabytes";
                 DriveInfo[] allDrives = DriveInfo.GetDrives();
-                result += string.Format("# HELP {0} Total disk space\n", counterDriveInfoTotalSizeName);
-                result += string.Format("# TYPE {0} gauge\n", counterDriveInfoTotalSizeName);
+                result += Prometheus.CreateMetricDescription(
+                    counterDriveInfoTotalSizeName,
+                    "gauge",
+                    "Total disk space."
+                );
                 foreach (DriveInfo d in allDrives)
                 {
                     if (d.IsReady == true)
                     {
-                        result += string.Format("{0}{2} {1}\n", counterDriveInfoTotalSizeName, d.TotalSize / 1024 / 1024, "{disk=\"" + GenerateSlug(d.Name) + "\"}");
+                        result += Prometheus.CreateMetric(
+                            counterDriveInfoTotalSizeName,
+                            (d.TotalSize / 1024 / 1024).ToString(),
+                            "{disk=\"" + GenerateSlug(d.Name) + "\"}"
+                        );
                     }
                 }
                 #endregion
@@ -115,8 +151,11 @@ namespace hyperv_exporter
                 string counterLogicalDiskFreeMegabytesName = "hyperv_logical_disk_avaliable_megabytes";
                 PerformanceCounterCategory categoryLogicalDiskFreeMegabytes = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "LogicalDisk");
                 string[] instanceLogicalDiskFreeMegabytesNames = categoryLogicalDiskFreeMegabytes.GetInstanceNames();
-                result += string.Format("# HELP {0} Logical disk free space (in MB)\n", counterLogicalDiskFreeMegabytesName);
-                result += string.Format("# TYPE {0} gauge\n", counterLogicalDiskFreeMegabytesName);
+                result += Prometheus.CreateMetricDescription(
+                    counterLogicalDiskFreeMegabytesName,
+                    "gauge",
+                    "Logical disk free space (in MB)."
+                );
                 foreach (DriveInfo d in allDrives)
                 {
                     if (d.IsReady == true)
@@ -127,7 +166,11 @@ namespace hyperv_exporter
                         {
                             counterLogicalDiskFreeMegabytes.NextValue();
                             System.Threading.Thread.Sleep(1000);
-                            result += string.Format("{0}{2} {1}\n", counterLogicalDiskFreeMegabytesName, counterLogicalDiskFreeMegabytes.NextValue(), "{disk=\"" + GenerateSlug(instanceName) + "\"}");
+                            result += Prometheus.CreateMetric(
+                                counterLogicalDiskFreeMegabytesName,
+                                counterLogicalDiskFreeMegabytes.NextValue().ToString(),
+                                "{disk=\"" + GenerateSlug(instanceName) + "\"}"
+                            );
                         }
                     }
                 }
@@ -136,9 +179,16 @@ namespace hyperv_exporter
                 #region hyperv_vms_total
                 string counterHypervCountTotalVmsName = "hyperv_vms_total";
                 PerformanceCounterCategory categoryHypervCountTotalVms = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "Hyper-V Dynamic Memory VM");
-                result += string.Format("# HELP {0} Count total VMs in Hyper-V\n", counterHypervCountTotalVmsName);
-                result += string.Format("# TYPE {0} gauge\n", counterHypervCountTotalVmsName);
-                result += string.Format("{0} {1}\n", counterHypervCountTotalVmsName, categoryHypervCountTotalVms.GetInstanceNames().Count());
+                result += Prometheus.CreateMetricDescription(
+                    counterHypervCountTotalVmsName,
+                    "gauge",
+                    "Count total VMs in Hyper-V."
+                );
+                result += Prometheus.CreateMetric(
+                    counterHypervCountTotalVmsName,
+                    categoryHypervCountTotalVms.GetInstanceNames().Count().ToString(),
+                    string.Empty
+                );
                 #endregion
 
                 await context.Response.WriteAsync(result);
