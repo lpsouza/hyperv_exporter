@@ -7,6 +7,7 @@ Exporter for Prometheus developed in C# (.NET Core) for information on Hyper-V s
 - Total and available disk
 - Total traffic for each network interface
 - Count of total VMs
+- Count od total running VMs
 
 Most of the information is obtained directly from Hyper-V Server performance counters.
 
