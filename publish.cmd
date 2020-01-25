@@ -2,6 +2,8 @@
 
 cls
 echo # Cleaning project
+rd /s %~dp0libs\prometheus\bin\
+rd /s %~dp0libs\prometheus\obj\
 rd /s %~dp0src\bin\
 rd /s %~dp0src\obj\
 rd /s %~dp0publish\
