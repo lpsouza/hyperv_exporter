@@ -7,7 +7,9 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/perf_exporter.csproj"
+                "${workspaceFolder}/hyperv_exporter.sln",
+                "-r",
+                "win10-x64"
             ],
             "problemMatcher": "$msCompile"
         }
