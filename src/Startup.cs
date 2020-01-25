@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -126,7 +127,7 @@ namespace hyperv_exporter
                 }
                 #endregion
 
-                #region hyperv_logical_disk_total_megabytes
+                #region hyperv_logical_disk_total_megabytes and hyperv_logical_disk_avaliable_megabytes
                 string counterDriveInfoTotalSizeName = "hyperv_logical_disk_total_megabytes";
                 DriveInfo[] allDrives = DriveInfo.GetDrives();
                 result += Prometheus.CreateMetricDescription(
@@ -145,12 +146,8 @@ namespace hyperv_exporter
                         );
                     }
                 }
-                #endregion
 
-                #region hyperv_logical_disk_avaliable_megabytes
                 string counterLogicalDiskFreeMegabytesName = "hyperv_logical_disk_avaliable_megabytes";
-                PerformanceCounterCategory categoryLogicalDiskFreeMegabytes = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "LogicalDisk");
-                string[] instanceLogicalDiskFreeMegabytesNames = categoryLogicalDiskFreeMegabytes.GetInstanceNames();
                 result += Prometheus.CreateMetricDescription(
                     counterLogicalDiskFreeMegabytesName,
                     "gauge",
@@ -160,25 +157,18 @@ namespace hyperv_exporter
                 {
                     if (d.IsReady == true)
                     {
-                        string instanceName = instanceLogicalDiskFreeMegabytesNames.Where(a => GenerateSlug(a) == GenerateSlug(d.Name)).FirstOrDefault();
-                        PerformanceCounter counterLogicalDiskFreeMegabytes = new PerformanceCounter("LogicalDisk", "Free Megabytes", instanceName);
-                        if (counterLogicalDiskFreeMegabytes.RawValue > 0)
-                        {
-                            counterLogicalDiskFreeMegabytes.NextValue();
-                            System.Threading.Thread.Sleep(1000);
                             result += Prometheus.CreateMetric(
                                 counterLogicalDiskFreeMegabytesName,
-                                counterLogicalDiskFreeMegabytes.NextValue().ToString(),
-                                "{disk=\"" + GenerateSlug(instanceName) + "\"}"
+                                (d.AvailableFreeSpace / 1024 / 1024).ToString(),
+                                "{disk=\"" + GenerateSlug(d.Name) + "\"}"
                             );
-                        }
                     }
                 }
                 #endregion
 
                 #region hyperv_vms_total
                 string counterHypervCountTotalVmsName = "hyperv_vms_total";
-                PerformanceCounterCategory categoryHypervCountTotalVms = PerformanceCounterCategory.GetCategories().FirstOrDefault(a => a.CategoryName == "Hyper-V Dynamic Memory VM");
+                string totalVMs = ExecutePS("(Get-VM).Count");
                 result += Prometheus.CreateMetricDescription(
                     counterHypervCountTotalVmsName,
                     "gauge",
@@ -186,7 +176,22 @@ namespace hyperv_exporter
                 );
                 result += Prometheus.CreateMetric(
                     counterHypervCountTotalVmsName,
-                    categoryHypervCountTotalVms.GetInstanceNames().Count().ToString(),
+                    totalVMs,
+                    string.Empty
+                );
+                #endregion
+
+                #region hyperv_vms_running
+                string counterHypervCountRunningVmsName = "hyperv_vms_running";
+                string runningVMs = ExecutePS("(Get-VM | Where-Object State -EQ 'Running').Count");
+                result += Prometheus.CreateMetricDescription(
+                    counterHypervCountRunningVmsName,
+                    "gauge",
+                    "Count total VMs are running in Hyper-V."
+                );
+                result += Prometheus.CreateMetric(
+                    counterHypervCountRunningVmsName,
+                    runningVMs,
                     string.Empty
                 );
                 #endregion
@@ -201,6 +206,20 @@ namespace hyperv_exporter
             s = Regex.Replace(s, @"\s+", " ").Trim();
             s = Regex.Replace(s, @"\s", "_");
             return s;
+        }
+
+        public static string ExecutePS(string command)
+        {
+            string resultPS = string.Empty;
+            using (var ps = PowerShell.Create())
+            {
+                var results = ps.AddScript(command).Invoke();
+                foreach (var result in results)
+                {
+                    resultPS += result.ToString();
+                }
+            }
+            return resultPS;
         }
     }
 }
