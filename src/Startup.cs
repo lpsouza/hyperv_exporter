@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -108,17 +108,25 @@ namespace hyperv_exporter
                 );
                 foreach (string instanceName in instanceNetworkAdapterBytesTotalSecNames)
                 {
-                    PerformanceCounter counterNetworkAdapterBytesTotalSec = new PerformanceCounter("Network Adapter", "Bytes Total/sec", instanceName);
-                    if (counterNetworkAdapterBytesTotalSec.RawValue > 0)
+                    try
                     {
-                        string name = networkInterfaces.AsEnumerable().Where(a => GenerateSlug(a.Description) == GenerateSlug(instanceName)).FirstOrDefault().Name;
-                        counterNetworkAdapterBytesTotalSec.NextValue();
-                        System.Threading.Thread.Sleep(1000);
-                        result += Prometheus.CreateMetric(
-                            counterNetworkAdapterBytesTotalSecName,
-                            counterNetworkAdapterBytesTotalSec.NextValue().ToString(),
-                            "{adapter=\"" + GenerateSlug(name) + "\"}"
-                        );
+                        PerformanceCounter counterNetworkAdapterBytesTotalSec = new PerformanceCounter("Network Adapter", "Bytes Total/sec", instanceName);
+                        if (counterNetworkAdapterBytesTotalSec.RawValue > 0)
+                        {
+                            string name = networkInterfaces.AsEnumerable().Where(a => GenerateSlug(a.Description) == GenerateSlug(instanceName)).FirstOrDefault().Name;
+                            counterNetworkAdapterBytesTotalSec.NextValue();
+                            System.Threading.Thread.Sleep(1000);
+                            result += Prometheus.CreateMetric(
+                                counterNetworkAdapterBytesTotalSecName,
+                                counterNetworkAdapterBytesTotalSec.NextValue().ToString(),
+                                "{adapter=\"" + GenerateSlug(name) + "\"}"
+                            );
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Console.WriteLine("EXCEPTION: {0}",ex.Message);
+                        // throw;
                     }
                 }
                 #endregion
@@ -153,11 +161,11 @@ namespace hyperv_exporter
                 {
                     if (d.IsReady == true)
                     {
-                            result += Prometheus.CreateMetric(
-                                counterLogicalDiskFreeMegabytesName,
-                                (d.AvailableFreeSpace / 1024 / 1024).ToString(),
-                                "{disk=\"" + GenerateSlug(d.Name) + "\"}"
-                            );
+                        result += Prometheus.CreateMetric(
+                            counterLogicalDiskFreeMegabytesName,
+                            (d.AvailableFreeSpace / 1024 / 1024).ToString(),
+                            "{disk=\"" + GenerateSlug(d.Name) + "\"}"
+                        );
                     }
                 }
                 #endregion
