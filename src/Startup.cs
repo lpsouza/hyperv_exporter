@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Management.Automation;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using dotnet_lib_prometheus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -166,36 +162,6 @@ namespace hyperv_exporter
                 }
                 #endregion
 
-                #region hyperv_vms_total
-                string counterHypervCountTotalVmsName = "hyperv_vms_total";
-                string totalVMs = ExecutePS("(Get-VM).Count");
-                result += Prometheus.CreateMetricDescription(
-                    counterHypervCountTotalVmsName,
-                    "gauge",
-                    "Count total VMs in Hyper-V."
-                );
-                result += Prometheus.CreateMetric(
-                    counterHypervCountTotalVmsName,
-                    totalVMs,
-                    string.Empty
-                );
-                #endregion
-
-                #region hyperv_vms_running
-                string counterHypervCountRunningVmsName = "hyperv_vms_running";
-                string runningVMs = ExecutePS("(Get-VM | Where-Object State -EQ 'Running').Count");
-                result += Prometheus.CreateMetricDescription(
-                    counterHypervCountRunningVmsName,
-                    "gauge",
-                    "Count total VMs are running in Hyper-V."
-                );
-                result += Prometheus.CreateMetric(
-                    counterHypervCountRunningVmsName,
-                    runningVMs,
-                    string.Empty
-                );
-                #endregion
-
                 await context.Response.WriteAsync(result);
             });
         }
@@ -206,20 +172,6 @@ namespace hyperv_exporter
             s = Regex.Replace(s, @"\s+", " ").Trim();
             s = Regex.Replace(s, @"\s", "_");
             return s;
-        }
-
-        public static string ExecutePS(string command)
-        {
-            string resultPS = string.Empty;
-            using (var ps = PowerShell.Create())
-            {
-                var results = ps.AddScript(command).Invoke();
-                foreach (var result in results)
-                {
-                    resultPS += result.ToString();
-                }
-            }
-            return resultPS;
         }
     }
 }
