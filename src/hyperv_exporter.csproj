@@ -8,8 +8,6 @@
   <ItemGroup>
     <PackageReference Include="ComputerInfo" Version="0.1.0-prerelease" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0" />
-    <PackageReference Include="microsoft.powershell.commands.diagnostics" Version="6.2.3" />
-    <PackageReference Include="microsoft.powershell.sdk" Version="6.2.3" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.1" />
     <PackageReference Include="microsoft.wsman.management" Version="6.2.3" />
   </ItemGroup>
